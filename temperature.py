@@ -23,11 +23,12 @@ capacite_thermique = 100 # capacité thermiquer du lit chauffant
 delta_mesure = 0.0 # retard de mesure en seconde de la sonde
 
 ########## Constantes PID ############
-# Coefficients du PID
-kp = 1
-ki = 0.1
-kd = 0
-I_max = 20
+# Coefficients du PID  
+#  *(Resistance/(V_Alim * V_Alim )) permet de rendre les coefficient indépendents de la resistance et tension d'alimentation
+kp = 1      *(Resistance/(V_Alim * V_Alim ))
+ki = 0.1    *(Resistance/(V_Alim * V_Alim ))
+kd = 0      *(Resistance/(V_Alim * V_Alim ))
+I_max = 20  *(Resistance/(V_Alim * V_Alim ))
 
 
 ########## variables globales modèl physiques ############
