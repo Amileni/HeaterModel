@@ -7,18 +7,18 @@ from matplotlib.pyplot import *
 matplotlib.use('tkagg')
 
 
-duree_simu = 1000 # durée de la simulation en secondes
+duree_simu = 100000 # durée de la simulation en secondes
 temps_de_boucle = 0.02 # periode de l'algorithme en seconde
-temperature_consigne = 30 # température de consigne
+temperature_consigne =60 # température de consigne
 index_start = 2 # demarage de la simulation (eviter de sortir des bornes du tableau avec des index négatifs)
 
 ########## Constantes physiques ############
 V_Alim = 24 # tension d'alimentation de la resistance chauffante en V
 Resistance = 10 # resistance  de la resistance chauffante en Ohm
 
-coeff_conv = 5 # coefficient de convexion
+coeff_conv = 0.9 # coefficient de convexion
 ambiant_T = 20 # temperature de l'ai embiant
-capacite_thermique = 100 # capacité thermiquer du lit chauffant
+capacite_thermique = 5000 # capacité thermiquer du lit chauffant
 
 delta_mesure = 0.0 # retard de mesure en seconde de la sonde
 
@@ -75,6 +75,20 @@ def pid(_dt, _T, _Tc, _old_T, _I_eT) :
     #old_T = _T
     return cmd, _I_eT
 
+def onOff(_T, _Tc, _oldCmd) :
+	if (_oldCmd == 1) :
+		cmd = 1
+		
+		if (_T > _Tc * 1.05) :
+			cmd = 0
+	
+	else :
+		cmd = 0
+		
+		if (_T < _Tc * 0.95) :
+			cmd = 1
+	
+	return cmd
 
 #convertire la commande, rapport cyclique entre 0 et 1, en puissance de chauffe en W
 # _cmd : rapport cyclique entre 0 et 1
@@ -114,7 +128,8 @@ if __name__ == '__main__':
     # première étape de la simulation, la sonde ne capte pas encore l'évolution de la température
     for k in range(index_start,offset_mesure if offset_mesure > index_start else index_start):
         Tm[k] = ambiant_T
-        cmd[k], I_eT[k]= pid(dt, T[0], temperature_consigne, T[0], I_eT[k-1])
+        #cmd[k], I_eT[k]= pid(dt, T[0], temperature_consigne, T[0], I_eT[k-1])
+        cmd[k] = 1
         power[k] = cmd_to_power(cmd[k])
         T[k], dissi_pow[k] = evol_T(dt, T[k-1], power[k])
         t[k] = t[k-1] + dt
@@ -124,7 +139,8 @@ if __name__ == '__main__':
         
         #calcul du PID
         Tm[k] = T[k-offset_mesure-1]
-        cmd[k], I_eT[k]= pid(dt, Tm[k], temperature_consigne, Tm[k-1], I_eT[k-1])
+        #cmd[k], I_eT[k]= pid(dt, Tm[k], temperature_consigne, Tm[k-1], I_eT[k-1])
+        cmd[k] = onOff(Tm[k], temperature_consigne, cmd[k-1])
 
         #enregistrement de la valme
         power[k] = cmd_to_power(cmd[k])
@@ -136,7 +152,7 @@ if __name__ == '__main__':
     plot(t, T,'b',label='T')
     plot(t, Tm,'g',label='Tm')
     title('T')
-    plot(t, 30*cmd,'r',label='cmd')
+    plot(t, cmd,'r',label='cmd')
     legend(loc="best")
     title('cmd')
     #figure()
