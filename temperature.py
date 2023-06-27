@@ -7,18 +7,24 @@ from matplotlib.pyplot import *
 matplotlib.use('tkagg')
 
 
-duree_simu = 100000 # durée de la simulation en secondes
-temps_de_boucle = 0.02 # periode de l'algorithme en seconde
-temperature_consigne =60 # température de consigne
+duree_simu = 1800 # durée de la simulation en secondes
+temps_de_boucle = 0.1 # periode de l'algorithme en seconde
+temperature_consigne = 60 # température de consigne
 index_start = 2 # demarage de la simulation (eviter de sortir des bornes du tableau avec des index négatifs)
 
 ########## Constantes physiques ############
-V_Alim = 24 # tension d'alimentation de la resistance chauffante en V
-Resistance = 10 # resistance  de la resistance chauffante en Ohm
+V_Alim = 12 # tension d'alimentation de la resistance chauffante en V
+Resistance = 1.5 # resistance  de la resistance chauffante en Ohm
 
-coeff_conv = 0.9 # coefficient de convexion
+coeff_conv = 0.2 # coefficient de convexion
 ambiant_T = 20 # temperature de l'ai embiant
-capacite_thermique = 5000 # capacité thermiquer du lit chauffant
+
+capacite_thermique_massique = 900 # capacité thermique de l'aluminium en W/kg*K
+densite = 2700 # densité du du lit en kg/m3
+volume_lit = 0.22 * 0.22 * 0.005 # volume du lit en m3
+masse_lit = densite * volume_lit
+
+capacite_thermique = masse_lit * capacite_thermique_massique # capacité thermique du lit chauffant
 
 delta_mesure = 0.0 # retard de mesure en seconde de la sonde
 
@@ -79,13 +85,13 @@ def onOff(_T, _Tc, _oldCmd) :
 	if (_oldCmd == 1) :
 		cmd = 1
 		
-		if (_T > _Tc * 1.05) :
+		if (_T > _Tc * 1.01) :
 			cmd = 0
 	
 	else :
 		cmd = 0
 		
-		if (_T < _Tc * 0.95) :
+		if (_T < _Tc * 0.99) :
 			cmd = 1
 	
 	return cmd
@@ -137,10 +143,11 @@ if __name__ == '__main__':
     #suite de la simulation
     for k in range(offset_mesure if offset_mesure > index_start else index_start,N):
         
-        #calcul du PID
-        Tm[k] = T[k-offset_mesure-1]
-        #cmd[k], I_eT[k]= pid(dt, Tm[k], temperature_consigne, Tm[k-1], I_eT[k-1])
-        cmd[k] = onOff(Tm[k], temperature_consigne, cmd[k-1])
+        if ((k * temps_de_boucle) < 1000) :
+            #calcul du PID
+            Tm[k] = T[k-offset_mesure-1]
+            #cmd[k], I_eT[k]= pid(dt, Tm[k], temperature_consigne, Tm[k-1], I_eT[k-1])
+            cmd[k] = onOff(Tm[k], temperature_consigne, cmd[k-1])
 
         #enregistrement de la valme
         power[k] = cmd_to_power(cmd[k])
@@ -148,6 +155,7 @@ if __name__ == '__main__':
         t[k] = t[k-1] + dt
 
     print("offset_mesure : %d" % offset_mesure)
+    print("Capacité thermique : %d" % capacite_thermique)
 
     plot(t, T,'b',label='T')
     plot(t, Tm,'g',label='Tm')
