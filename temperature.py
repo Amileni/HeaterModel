@@ -17,10 +17,10 @@ V_Alim = 12 # tension d'alimentation de la resistance chauffante en V
 Resistance = 1.5 # resistance  de la resistance chauffante en Ohm
 
 coeff_conv = 0.2 # coefficient de convexion
-ambiant_T = 20 # temperature de l'ai embiant
+ambiant_T = 20 # temperature de l'air ambiant
 
 capacite_thermique_massique = 900 # capacité thermique de l'aluminium en W/kg*K
-densite = 2700 # densité du du lit en kg/m3
+densite = 2700 # densité du lit en kg/m3
 volume_lit = 0.22 * 0.22 * 0.005 # volume du lit en m3
 masse_lit = densite * volume_lit
 
